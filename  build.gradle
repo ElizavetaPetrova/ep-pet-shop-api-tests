@@ -7,5 +7,22 @@ repositories {
 }
 
 dependencies {
-    // библиотеки добавим в следующих уроках
+    // JUnit 5 - запуск тестов
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // REST Assured - HTTP-запросы
+    testImplementation 'io.rest-assured:rest-assured:5.3.2'
+
+    // Allure - отчёты
+    testImplementation 'io.qameta.allure:allure-junit5:2.24.0'
+    testImplementation 'io.qameta.allure:allure-rest-assured:2.24.0'
+
+    // Jackson - работа с JSON
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    testImplementation 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
+}
+
+test {
+    useJUnitPlatform()
 }

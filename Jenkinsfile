@@ -19,7 +19,7 @@ pipeline {
 
         stage("Allure Report") {
             steps {
-                allure results: [[path: "allure-results"]]
+                allure results: [[path: "build/allure-results"]]
             }
         }
     }

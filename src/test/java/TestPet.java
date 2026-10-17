@@ -20,7 +20,7 @@ public class TestPet {
         // Тело ответа как текст - получаем один раз и переиспользуем
         String responseBody = response.getBody().asString();
 
-        assertEquals(201, response.getStatusCode(),
+        assertEquals(200, response.getStatusCode(),
                 "Код ответа не совпал с ожидаемым. Ответ: " + responseBody);
 
         assertEquals("Pet deleted", responseBody,

@@ -6,8 +6,12 @@ import io.restassured.response.Response;
 import models.Pet;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
@@ -112,5 +116,41 @@ public class TestPet {
                 assertEquals("Pet not found", responseBody,
                         "Текст ответа не совпал с ожидаемым. Получен: " + responseBody));
 
+    }
+
+    static Stream<Pet> petsToCreate() {
+        Pet.Category category = new Pet.Category(); category.setId(1); category.setName("Dog");
+        Pet a = new Pet(); a.setId(1101); a.setName("Rex");  a.setStatus("available"); a.setCategory(category);
+        return Stream.of(a);
+    }
+
+    @ParameterizedTest(name = "Добавление питомца со статусом: {0}")
+    @MethodSource("petsToCreate")
+    @Feature("Pet")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("elizaveta petrova")
+    public void testAddNewPet(Pet pet) {
+
+        Response response = step("Отправить POST запрос на добавление питомца", () ->
+                given()
+                        .contentType(ContentType.JSON)
+                        .header("Accept", "application/json")
+                        .body(pet)
+                        .when()
+                        .post(BASE_URL + "/pet"));
+
+        String responseBody = response.getBody().asString();
+
+        step("Проверить, что статус-код ответа == 200", () ->
+                assertEquals(200, response.getStatusCode(),
+                        "Код ответа не совпал с ожидаемым. Ответ: " + responseBody));
+
+        step("Проверка параметров созданного питомца", () -> {
+            Pet createdPet = response.as(Pet.class);
+            assertEquals(pet.getId(), createdPet.getId(), "id питомца не совпадает с ожидаемым");
+            assertEquals(pet.getName(), createdPet.getName(), "имя питомца не совпадает с ожидаемым");
+            assertEquals(pet.getStatus(), createdPet.getStatus(), "статус питомца не совпадает с ожидаемым");
+            assertEquals(pet.getCategory().getName(), createdPet.getCategory().getName(), "Категория питомца не совпадает с отправленной");
+        });
     }
 }

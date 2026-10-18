@@ -118,18 +118,21 @@ public class TestPet {
 
     }
 
-    static Stream<Pet> petsToCreate() {
-        Pet.Category category = new Pet.Category(); category.setId(1); category.setName("Dog");
-        Pet a = new Pet(); a.setId(1101); a.setName("Rex");  a.setStatus("available"); a.setCategory(category);
-        return Stream.of(a);
-    }
-
-    @ParameterizedTest(name = "Добавление питомца со статусом: {0}")
-    @MethodSource("petsToCreate")
+    @ParameterizedTest(name = "Добавление питомца со статусом: {2}")
+    @CsvSource({
+            "200, Kiwi, available, 200",
+            "201, Buddy, pending, 200",
+            "202, Garfield, sold, 200",
+            "203, Lice, unknown, 400"
+    })
     @Feature("Pet")
     @Severity(SeverityLevel.CRITICAL)
     @Owner("elizaveta petrova")
-    public void testAddNewPet(Pet pet) {
+    public void testAddNewPet(int id, String name, String status, int expectedStatusCode) {
+        Pet pet = new Pet();
+        pet.setId(id);
+        pet.setName(name);
+        pet.setStatus(status);
 
         Response response = step("Отправить POST запрос на добавление питомца", () ->
                 given()
@@ -141,16 +144,21 @@ public class TestPet {
 
         String responseBody = response.getBody().asString();
 
-        step("Проверить, что статус-код ответа == 200", () ->
-                assertEquals(200, response.getStatusCode(),
-                        "Код ответа не совпал с ожидаемым. Ответ: " + responseBody));
-
-        step("Проверка параметров созданного питомца", () -> {
-            Pet createdPet = response.as(Pet.class);
-            assertEquals(pet.getId(), createdPet.getId(), "id питомца не совпадает с ожидаемым");
-            assertEquals(pet.getName(), createdPet.getName(), "имя питомца не совпадает с ожидаемым");
-            assertEquals(pet.getStatus(), createdPet.getStatus(), "статус питомца не совпадает с ожидаемым");
-            assertEquals(pet.getCategory().getName(), createdPet.getCategory().getName(), "Категория питомца не совпадает с отправленной");
-        });
+        step("Проверить статус код ответа", () ->
+                assertEquals(expectedStatusCode, response.getStatusCode(),
+                        "Неверный код ответа " + responseBody));
+        if (expectedStatusCode == 200){
+            step("Проверка параметров созданного питомца", () -> {
+                Pet createdPet = response.as(Pet.class);
+                assertEquals(pet.getId(), createdPet.getId(), "id питомца не совпадает с ожидаемым");
+                assertEquals(pet.getName(), createdPet.getName(), "имя питомца не совпадает с ожидаемым");
+                assertEquals(pet.getStatus(), createdPet.getStatus(), "статус питомца не совпадает с ожидаемым");
+            });
+        }
+        else {
+            step("Проверка сообщения об ошибке", () -> {
+               assertEquals("Invalid pet status. Valid values: [available, pending, sold]", responseBody);
+            });
+        }
     }
 }

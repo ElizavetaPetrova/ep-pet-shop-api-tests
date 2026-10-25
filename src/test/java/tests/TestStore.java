@@ -28,7 +28,7 @@ public class TestStore {
     public void testPlaceOrder(String status) {
         Order order = new Order();
         order.setId(1);
-        order.setPetId(10);
+        order.setPetId(1);
         order.setQuantity(1);
         order.setShipDate("2026-09-10T10:00:00.000Z");
         order.setStatus(status);
@@ -63,7 +63,7 @@ public class TestStore {
     public void testGetOrderById() {
         // Предусловие: создаём заказ, который будем запрашивать
         Order order = new Order();
-        order.setId(2);
+        order.setId(1);
         order.setPetId(10);
         order.setQuantity(2);
         order.setStatus("approved");
@@ -94,7 +94,7 @@ public class TestStore {
     @Owner("elizaveta petrova")
     public void testDeleteOrder() {
         Order order = new Order();
-        order.setId(3);
+        order.setId(1);
         order.setPetId(10);
         order.setQuantity(1);
         order.setStatus("placed");
@@ -172,7 +172,9 @@ public class TestStore {
             assertEquals(200, response.getStatusCode());
             // Ответ вида {"available": 5, "pending": 2, "sold": 1}
             Integer approved = response.jsonPath().getInt("approved");
+            Integer delivered = response.jsonPath().getInt("delivered");
             assertTrue(approved >= 0, "Количество approved не может быть отрицательным");
+            assertTrue(delivered >= 0, "Количество delivered не может быть отрицательным");
         });
     }
 }
